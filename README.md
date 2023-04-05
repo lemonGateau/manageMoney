@@ -1,0 +1,2 @@
+# manageMoney
+is using moneyforward.
