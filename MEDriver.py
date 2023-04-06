@@ -9,7 +9,7 @@ import config
 
 
 class MEDriver:
-    def __init__(self):
+    def __init__(self, mail_address, password):
         # UserAgent設定
         options = webdriver.ChromeOptions()
         UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.1 Safari/605.1.15'
@@ -17,6 +17,8 @@ class MEDriver:
 
         self.web = webdriver.Chrome(executable_path='C:/Users/manab/github_/chromedriver.exe')
         self.end_point = "https://moneyforward.com"
+
+        self.login(mail_address, password)
 
     def login(self, mail_address, password):
         if self.is_logged_in():
@@ -41,6 +43,9 @@ class MEDriver:
         submit.click()
         time.sleep(2)
 
+        if self.is_logged_in():
+            return True
+
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div[1]/div/ul/li/a/img")
         submit.click()
         time.sleep(2)
@@ -52,7 +57,7 @@ class MEDriver:
         return self.is_logged_in()
 
     # ホーム/最新の入出金
-    def fetch_newest_activities(self):
+    def fetch_current_transactions(self):
         self.to_page(self.end_point)
 
         dates      = self.web.find_elements_by_class_name("recent-transactions-date")
@@ -79,9 +84,42 @@ class MEDriver:
 
         return self.web.find_element_by_xpath('//*[@id="user-info"]/section/div[1]').text
 
+    # ホーム/明細
+    def fetch_account_statuses(self):
+        """ todo: カード、銀行などで場合分け """
+        self.to_page(self.end_point)
+
+        accounts = list()
+        amounts  = list()
+
+        for i in range(30):
+            try:
+                accounts.append(self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/div'))
+                amounts.append(self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/ul[1]'))
+            except:
+                break
+
+        names  = list()
+        updates  = list()
+        values = list()
+
+        for account, amount in zip(accounts, amounts):
+            name, update = account.text.split("\n")
+            amount = amount.text.split("\n")[0]
+
+            names.append(name)
+            updates.append(update)
+            values.append(amount)
+
+        data = dict(Account=names, Amount=values, Update=updates)
+
+        return pd.DataFrame(data=data)
+
     # 家計簿/月次推移/収支リスト
     def fetch_balances(self, institution_name=None):
         self.to_page(self.end_point + "/cf/monthly")
+
+        
 
 
     # 予算/今月の予算
@@ -103,11 +141,22 @@ class MEDriver:
 
 
 if __name__ == '__main__':
-    me = MEDriver()
-    me.login(config.mail1, config.pw1)
+    mes = list()
+    mes.append(MEDriver(config.mail1, config.pw1))
+    mes.append(MEDriver(config.mail2, config.pw2))
+    mes.append(MEDriver(config.mail3, config.pw3))
 
-    df = me.fetch_newest_activities()
-    print(df)
+    for me in mes:
+        print("\n\n")
 
-    total = me.fetch_total_asset()
-    print(total)
+        df = me.fetch_current_transactions()
+        print(df)
+
+        total = me.fetch_total_asset()
+        print(total)
+
+        df2 = me.fetch_account_statuses()
+        print(df2)
+
+        print("\n\n")
+
