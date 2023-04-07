@@ -70,10 +70,9 @@ class MEDriver:
         shops      = [s.text for s in shops]
         amounts    = [a.text for a in amounts]
 
-        data = dict(Date=dates, Category=categories, Shop=shops, Amount=amounts)
+        data = dict(Category=categories, Shop=shops, Amount=amounts)
 
-        return pd.DataFrame(data=data)
-
+        return pd.DataFrame(data=data, index=dates)
 
         # table_data = self.web.find_element_by_id("recent-transactions-table")
         # return table_data.text.split("\n")
@@ -105,21 +104,40 @@ class MEDriver:
 
         for account, amount in zip(accounts, amounts):
             name, update = account.text.split("\n")
-            amount = amount.text.split("\n")[0]
+            amount, *_   = amount.text.split("\n")
 
             names.append(name)
             updates.append(update)
             values.append(amount)
 
-        data = dict(Account=names, Amount=values, Update=updates)
+        data = dict(Update=updates, Value=values)
 
-        return pd.DataFrame(data=data)
+        return pd.DataFrame(data=data, index=names)
+
 
     # 家計簿/月次推移/収支リスト
-    def fetch_balances(self, institution_name=None):
+    def fetch_total_balances(self):
         self.to_page(self.end_point + "/cf/monthly")
 
-        
+        periods = self.web.find_element_by_xpath('//*[@id="monthly_list"]/tbody/tr[1]')
+        periods = periods.text.split(" ")
+
+        income = self.web.find_element_by_class_name("in_sum")
+        outgo  = self.web.find_element_by_class_name("out_sum")
+        total  = self.web.find_element_by_class_name("total")
+
+        names = ["", "", ""]
+        names[0], *incomes = income.text.split(" ")
+        names[1], *outgos  = outgo.text.split(" ")
+        names[2], *totals  = total.text.split(" ")
+
+        return pd.DataFrame(data=[incomes, outgos, totals], columns=periods, index=names)
+
+    # 家計簿/月次推移/収支リスト
+    def fetch_category_balances(self):
+        self.to_page(self.end_point + "/cf/monthly")
+
+        periods = self.web.find_elements_by_xpath('//*[@id="monthly_list"]/tbody/tr[1]')
 
 
     # 予算/今月の予算
@@ -143,20 +161,27 @@ class MEDriver:
 if __name__ == '__main__':
     mes = list()
     mes.append(MEDriver(config.mail1, config.pw1))
-    mes.append(MEDriver(config.mail2, config.pw2))
-    mes.append(MEDriver(config.mail3, config.pw3))
+    # mes.append(MEDriver(config.mail2, config.pw2))
+    # mes.append(MEDriver(config.mail3, config.pw3))
 
     for me in mes:
         print("\n\n")
 
         df = me.fetch_current_transactions()
         print(df)
+        print("\n")
 
         total = me.fetch_total_asset()
         print(total)
+        print("\n")
 
         df2 = me.fetch_account_statuses()
         print(df2)
+        print("\n")
+
+        df3 = me.fetch_total_balances()
+        print(df3)
+        print("\n")
 
         print("\n\n")
 
