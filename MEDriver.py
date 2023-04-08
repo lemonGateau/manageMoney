@@ -80,18 +80,19 @@ class MEDriver:
         """ todo: カード、銀行などで場合分け """
         self._to_page(self.end_point)
 
-        df = pd.DataFrame(columns=["Update", "Amount"])
-        for i in range(30):
-            try:
-                account = self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/div')
-                amount  = self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/ul[1]')
-            except:
-                break
+        df = pd.DataFrame(columns=["Amount", "Update"])
 
+        try:
+            accounts = self.web.find_elements_by_class_name("heading-accounts")
+            amounts  = self.web.find_elements_by_class_name("amount")
+        except:
+            return None
+
+        for account, amount in zip(accounts, amounts):
             name, update = account.text.split("\n")
             amount, *_   = amount.text.split("\n")
 
-            df.loc[name] = [update, amount]
+            df.loc[name] = [amount, update]
 
         return df
 
@@ -137,10 +138,6 @@ class MEDriver:
 
         return period, df
 
-    # 口座/登録済み金融機関
-    def fetch_financial_institutions(self):
-        pass
-
     def _is_logged_in(self):
         return self.web.title == "マネーフォワード ME"
 
@@ -149,62 +146,52 @@ class MEDriver:
             return False
 
         self.web.get(url)
-        time.sleep(2)   # 動的な要素で、表示に若干必要だから（fetch_monthly_budget()の予算など）
+        time.sleep(1)   # 動的な要素で、表示に若干必要だから（fetch_monthly_budget()の予算など）
+
+    # 各金融機関の最新情報に更新
+    def _reload_assets(self):
+        pass
 
 
 if __name__ == '__main__':
     mes = list()
     mes.append(MEDriver(config.mail1, config.pw1))
-    mes.append(MEDriver(config.mail2, config.pw2))
-    mes.append(MEDriver(config.mail3, config.pw3))
+    # mes.append(MEDriver(config.mail2, config.pw2))
+    # mes.append(MEDriver(config.mail3, config.pw3))
+    # mes.append(MEDriver(config.mail4, config.pw4))
 
     time.sleep(1)
     for me in mes:
         print("\n\n")
 
+        print("fetch_current_transactions")
         df = me.fetch_current_transactions()
         print(df)
         print("\n")
 
+        print("fetch_total_asset")
         total = me.fetch_total_asset()
         print(total)
         print("\n")
 
+        print("fetch_account_statuses")
         df2 = me.fetch_account_statuses()
         print(df2)
         print("\n")
 
+        print("fetch_monthly_balances")
         df3 = me.fetch_monthly_balances()
         print(df3)
         print("\n")
 
+        print("fetch_monthly_budget")
         period, df4 = me.fetch_monthly_budget()
         print(period)
         print(df4)
         print("\n")
 
+        print("fetch_monthly_budget(offset_month=2)")
         period, df5 = me.fetch_monthly_budget(offset_month=2)
         print(period)
         print(df5)
         print("\n\n")
-
-
-    """
-    # 家計簿/月次推移/収支リスト
-    def fetch_total_balances(self):
-        self.to_page(self.end_point + "/cf/monthly")
-
-        periods = self.web.find_element_by_xpath('//*[@id="monthly_list"]/tbody/tr[1]')
-        periods = periods.text.split(" ")
-
-        income = self.web.find_element_by_class_name("in_sum")
-        outgo  = self.web.find_element_by_class_name("out_sum")
-        total  = self.web.find_element_by_class_name("total")
-
-        names = ["", "", ""]
-        names[0], *incomes = income.text.split(" ")
-        names[1], *outgos  = outgo.text.split(" ")
-        names[2], *totals  = total.text.split(" ")
-
-        return pd.DataFrame(data=[incomes, outgos, totals], columns=periods, index=names)
-    """
