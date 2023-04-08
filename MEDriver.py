@@ -2,6 +2,7 @@
 
 import datetime
 import time
+import re
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -21,7 +22,7 @@ class MEDriver:
         self.login(mail_address, password)
 
     def login(self, mail_address, password):
-        if self.is_logged_in():
+        if self._is_logged_in():
             return True
 
         url = "https://id.moneyforward.com/sign_in/email"
@@ -33,7 +34,7 @@ class MEDriver:
 
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div[1]/div[1]/section/form/div[2]/div/div[3]/input")
         submit.click()
-        time.sleep(2)
+        time.sleep(1)
 
         pw_form = self.web.find_element_by_xpath("/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/input[2]")
         pw_form.send_keys(password)
@@ -43,7 +44,7 @@ class MEDriver:
         submit.click()
         time.sleep(2)
 
-        if self.is_logged_in():
+        if self._is_logged_in():
             return True
 
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div[1]/div/ul/li/a/img")
@@ -52,69 +53,143 @@ class MEDriver:
 
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div[2]/input")
         submit.click()
-        time.sleep(5)
 
-        return self.is_logged_in()
+        return self._is_logged_in()
 
     # ホーム/最新の入出金
     def fetch_current_transactions(self):
-        self.to_page(self.end_point)
+        self._to_page(self.end_point)
 
-        dates      = self.web.find_elements_by_class_name("recent-transactions-date")
-        categories = self.web.find_elements_by_class_name("recent-transactions-category")
-        shops      = self.web.find_elements_by_class_name("recent-transactions-content")
-        amounts    = self.web.find_elements_by_class_name("recent-transactions-amount")
+        df = pd.DataFrame(columns=["Category", "Shop", "Amount"])
 
-        dates      = [d.text for d in dates]
-        categories = [c.text for c in categories]
-        shops      = [s.text for s in shops]
-        amounts    = [a.text for a in amounts]
+        table = self.web.find_elements_by_class_name("recent-transactions-row")
+        for row in table:
+            name, *data = row.text.split("\n")
+            df.loc[name] = data
 
-        data = dict(Category=categories, Shop=shops, Amount=amounts)
-
-        return pd.DataFrame(data=data, index=dates)
-
-        # table_data = self.web.find_element_by_id("recent-transactions-table")
-        # return table_data.text.split("\n")
+        return df
 
     # ホーム/総資産
     def fetch_total_asset(self):
-        self.to_page(self.end_point)
+        self._to_page(self.end_point)
 
         return self.web.find_element_by_xpath('//*[@id="user-info"]/section/div[1]').text
 
     # ホーム/明細
     def fetch_account_statuses(self):
         """ todo: カード、銀行などで場合分け """
-        self.to_page(self.end_point)
+        self._to_page(self.end_point)
 
-        accounts = list()
-        amounts  = list()
-
+        df = pd.DataFrame(columns=["Update", "Amount"])
         for i in range(30):
             try:
-                accounts.append(self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/div'))
-                amounts.append(self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/ul[1]'))
+                account = self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/div')
+                amount  = self.web.find_element_by_xpath(f'//*[@id="registered-accounts"]/ul/li[{i+3}]/ul[1]')
             except:
                 break
 
-        names  = list()
-        updates  = list()
-        values = list()
-
-        for account, amount in zip(accounts, amounts):
             name, update = account.text.split("\n")
             amount, *_   = amount.text.split("\n")
 
-            names.append(name)
-            updates.append(update)
-            values.append(amount)
+            df.loc[name] = [update, amount]
 
-        data = dict(Update=updates, Value=values)
+        return df
 
-        return pd.DataFrame(data=data, index=names)
+    # 家計簿/月次推移/収支リスト
+    def fetch_monthly_balances(self):
+        self._to_page(self.end_point + "/cf/monthly")
+
+        periods = self.web.find_element_by_xpath('//*[@id="monthly_list"]/tbody/tr[1]')
+        periods = periods.text.split()
+
+        df = pd.DataFrame(columns=periods)
+        for i in range(30):
+            try:
+                balance = self.web.find_element_by_xpath(f'//*[@id="monthly_list"]/tbody/tr[{i+2}]')
+            except:
+                break
+
+            name, *amounts = balance.text.split()
+            df.loc[name] = amounts
+
+        return df
+
+    # 予算/今月の予算
+    def fetch_monthly_budget(self, offset_month=0):
+        ''' offset_month = 0: 今月, 1: 前月...'''
+        if type(offset_month) in (str, int):
+            self._to_page(self.end_point + "/spending_summaries" + "?offset_month=" + str(offset_month))
+        else:
+            return None
+
+        period = self.web.find_element_by_xpath('//*[@id="budgets-progress"]/div/section/div/div/div').text
+
+        df = pd.DataFrame(columns=["Expense", "Budget"])
+        for i in range(30):
+            try:
+                row = self.web.find_element_by_xpath(f'//*[@id="budgets-progress"]/div/section/table/tbody/tr[{i+1}]')
+            except:
+                break
+
+            name, expense, budget = row.text.split("\n")
+
+            df.loc[name] = [expense, budget]
+
+        return period, df
+
+    # 口座/登録済み金融機関
+    def fetch_financial_institutions(self):
+        pass
+
+    def _is_logged_in(self):
+        return self.web.title == "マネーフォワード ME"
+
+    def _to_page(self, url):
+        if not self._is_logged_in():
+            return False
+
+        self.web.get(url)
+        time.sleep(2)   # 動的な要素で、表示に若干必要だから（fetch_monthly_budget()の予算など）
 
 
+if __name__ == '__main__':
+    mes = list()
+    mes.append(MEDriver(config.mail1, config.pw1))
+    mes.append(MEDriver(config.mail2, config.pw2))
+    mes.append(MEDriver(config.mail3, config.pw3))
+
+    time.sleep(1)
+    for me in mes:
+        print("\n\n")
+
+        df = me.fetch_current_transactions()
+        print(df)
+        print("\n")
+
+        total = me.fetch_total_asset()
+        print(total)
+        print("\n")
+
+        df2 = me.fetch_account_statuses()
+        print(df2)
+        print("\n")
+
+        df3 = me.fetch_monthly_balances()
+        print(df3)
+        print("\n")
+
+        period, df4 = me.fetch_monthly_budget()
+        print(period)
+        print(df4)
+        print("\n")
+
+        period, df5 = me.fetch_monthly_budget(offset_month=2)
+        print(period)
+        print(df5)
+        print("\n\n")
+
+
+    """
     # 家計簿/月次推移/収支リスト
     def fetch_total_balances(self):
         self.to_page(self.end_point + "/cf/monthly")
@@ -132,56 +207,4 @@ class MEDriver:
         names[2], *totals  = total.text.split(" ")
 
         return pd.DataFrame(data=[incomes, outgos, totals], columns=periods, index=names)
-
-    # 家計簿/月次推移/収支リスト
-    def fetch_category_balances(self):
-        self.to_page(self.end_point + "/cf/monthly")
-
-        periods = self.web.find_elements_by_xpath('//*[@id="monthly_list"]/tbody/tr[1]')
-
-
-    # 予算/今月の予算
-    def fetch_monthly_budget(self):
-        pass
-
-    # 口座/登録済み金融機関
-    def fetch_financial_institutions(self):
-        pass
-
-    def is_logged_in(self):
-        return self.web.title == "マネーフォワード ME"
-
-    def to_page(self, url):
-        if not self.is_logged_in():
-            return False
-
-        self.web.get(url)
-
-
-if __name__ == '__main__':
-    mes = list()
-    mes.append(MEDriver(config.mail1, config.pw1))
-    # mes.append(MEDriver(config.mail2, config.pw2))
-    # mes.append(MEDriver(config.mail3, config.pw3))
-
-    for me in mes:
-        print("\n\n")
-
-        df = me.fetch_current_transactions()
-        print(df)
-        print("\n")
-
-        total = me.fetch_total_asset()
-        print(total)
-        print("\n")
-
-        df2 = me.fetch_account_statuses()
-        print(df2)
-        print("\n")
-
-        df3 = me.fetch_total_balances()
-        print(df3)
-        print("\n")
-
-        print("\n\n")
-
+    """
