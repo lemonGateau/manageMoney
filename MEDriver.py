@@ -56,11 +56,17 @@ class MEDriver:
 
         return self._is_logged_in()
 
+    # ホーム/総資産
+    def fetch_total_asset(self):
+        self._to_page(self.end_point)
+
+        return self.web.find_element_by_xpath('//*[@id="user-info"]/section/div[1]').text
+
     # ホーム/最新の入出金
     def fetch_current_transactions(self):
         self._to_page(self.end_point)
 
-        df = pd.DataFrame(columns=["Category", "Shop", "Amount"])
+        df = pd.DataFrame(columns=["分類", "用途", "金額"])
 
         table = self.web.find_elements_by_class_name("recent-transactions-row")
         for row in table:
@@ -69,18 +75,12 @@ class MEDriver:
 
         return df
 
-    # ホーム/総資産
-    def fetch_total_asset(self):
-        self._to_page(self.end_point)
-
-        return self.web.find_element_by_xpath('//*[@id="user-info"]/section/div[1]').text
-
     # ホーム/明細
     def fetch_account_statuses(self):
         """ todo: カード、銀行などで場合分け """
         self._to_page(self.end_point)
 
-        df = pd.DataFrame(columns=["Amount", "Update"])
+        df = pd.DataFrame(columns=["金額", "更新日時"])
 
         try:
             accounts = self.web.find_elements_by_class_name("heading-accounts")
@@ -91,6 +91,8 @@ class MEDriver:
         for account, amount in zip(accounts, amounts):
             name, update = account.text.split("\n")
             amount, *_   = amount.text.split("\n")
+
+            update = update.replace("取得日時", "")[1:-1]
 
             df.loc[name] = [amount, update]
 
@@ -104,6 +106,7 @@ class MEDriver:
         periods = periods.text.split()
 
         df = pd.DataFrame(columns=periods)
+
         for i in range(30):
             try:
                 balance = self.web.find_element_by_xpath(f'//*[@id="monthly_list"]/tbody/tr[{i+2}]')
@@ -116,16 +119,14 @@ class MEDriver:
         return df
 
     # 予算/今月の予算
-    def fetch_monthly_budget(self, offset_month=0):
+    def fetch_monthly_budgets(self, offset_month=0):
         ''' offset_month = 0: 今月, 1: 前月...'''
-        if type(offset_month) in (str, int):
-            self._to_page(self.end_point + "/spending_summaries" + "?offset_month=" + str(offset_month))
-        else:
-            return None
+        self._to_page(self.end_point + "/spending_summaries" + "?offset_month=" + str(offset_month))
 
         period = self.web.find_element_by_xpath('//*[@id="budgets-progress"]/div/section/div/div/div').text
 
-        df = pd.DataFrame(columns=["Expense", "Budget"])
+        df = pd.DataFrame(columns=["支出", "予算"])
+
         for i in range(30):
             try:
                 row = self.web.find_element_by_xpath(f'//*[@id="budgets-progress"]/div/section/table/tbody/tr[{i+1}]')
@@ -185,13 +186,13 @@ if __name__ == '__main__':
         print("\n")
 
         print("fetch_monthly_budget")
-        period, df4 = me.fetch_monthly_budget()
+        period, df4 = me.fetch_monthly_budgets()
         print(period)
         print(df4)
         print("\n")
 
         print("fetch_monthly_budget(offset_month=2)")
-        period, df5 = me.fetch_monthly_budget(offset_month=2)
+        period, df5 = me.fetch_monthly_budgets(offset_month=2)
         print(period)
         print(df5)
         print("\n\n")
