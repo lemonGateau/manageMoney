@@ -66,8 +66,6 @@ class MEDriver:
     def fetch_current_transactions(self):
         self._to_page(self.end_point)
 
-        df = pd.DataFrame(columns=["分類", "店舗", "金額"])
-
         table = self.web.find_elements_by_class_name("recent-transactions-row")
         for row in table:
             name, *data = row.text.split("\n")

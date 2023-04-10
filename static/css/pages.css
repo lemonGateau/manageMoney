@@ -1,0 +1,122 @@
+
+h4,h5,h6 {
+    font-size: 17px;
+    line-height: 21px;
+    font-weight: normal;
+    color: #333;
+    text-align: center
+}
+
+thead {
+    background-color: #B1F1D1;
+    color: #333;
+    font-size: 12px;
+    text-align: center
+}
+
+#total_assets_table_home {
+    width: 20%;
+    border: 1px #DDD solid;
+    margin: 20px auto;
+    font-size: 15px
+}
+
+#total_assets_table_home .total_assets-head {
+    background-color: #FAF6F0;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 40%
+}
+
+#total_assets_table_home td {
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: right
+}
+
+
+/* ホーム/当月の収支 */
+#monthly_total_table_home {
+    width: 20%;
+    border: 1px #DDD solid;
+    margin: 20px auto;
+    font-size: 15px
+}
+
+#monthly_total_table_home .monthly-total-head {
+    background-color: #FAF6F0;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 40%
+}
+
+#monthly_total_table_home td {
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: right
+}
+
+
+/* ホーム/最新の入出金 */
+#recent_transactions_table_home {
+    width: 50%;
+    border: 1px #DDD solid;
+    margin: 30px auto;
+    font-size: 15px
+}
+
+#recent_transactions_table_home .recent-transactions-head {
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 20%
+}
+
+#recent_transactions_table_home .shop{
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center
+}
+
+#recent_transactions_table_home .amount{
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: right
+}
+
+
+/* ホーム/登録金融機関 */
+#financial_accounts_table_home {
+    width: 50%;
+    border: 1px #DDD solid;
+    margin: 30px auto;
+    font-size: 15px
+}
+
+#financial_accounts_table_home .financial-accounts-head {
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 40%
+}
+
+#financial_accounts_table_home .amount {
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: right
+}
+
+#financial_accounts_table_home .datetime {
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 30%
+}

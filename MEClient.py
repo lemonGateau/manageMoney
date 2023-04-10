@@ -32,10 +32,9 @@ class MEClient:
             self.lineNotifyBot(message="直近の入出金はありません")
             return
 
-        df = df.transpose()
-        df = df[df.columns[::-1]]   # 列を逆順に
+        df = df[["店舗", "金額"]]
 
-        df_to_png(df, plot_index=False, header=df.columns, png_path=self.png_path)
+        df_to_png(df, plot_index=True, header=df.columns, png_path=self.png_path)
 
         self.lineNotifyBot.send(message="最新の入出金", image=self.png_path)
 
@@ -53,16 +52,23 @@ class MEClient:
 
         return df
 
-    def send_monthly_balances(self):
+    def send_monthly_total_balances(self):
         df = self.driver.fetch_monthly_balances()
+
         if df.empty:
             return
 
+        df = df.transpose()
+        df = df[["収入合計", "支出合計", "収支合計"]]
+
         df_to_png(df, plot_index=True, header=df.columns, png_path=self.png_path)
 
-        self.lineNotifyBot.send(message="月次収支", image=self.png_path)
+        self.lineNotifyBot.send(message="収支", image=self.png_path)
 
         return df
+
+    def send_monthly_balance(self):
+        pass
 
     def send_monthly_budgets(self, offset_month=0):
         if not (type(offset_month) in (str, int)):
@@ -77,7 +83,8 @@ class MEClient:
 
         self.lineNotifyBot.send(message=period, image=self.png_path)
 
-        return df   
+        return df
+
 
 if __name__ == '__main__':
     mes = list()
@@ -91,7 +98,7 @@ if __name__ == '__main__':
         _ = me.send_total_asset()
         _ = me.send_current_transactions()
         _ = me.send_account_statuses()
-        _ = me.send_monthly_balances()
+        _ = me.send_monthly_total_balances()
         _ = me.send_monthly_budgets()
         _ = me.send_monthly_budgets(offset_month=3)
         time.sleep(5)
