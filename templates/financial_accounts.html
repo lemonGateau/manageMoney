@@ -14,33 +14,26 @@
     <!-- 登録金融機関 -->
     <h4>登録金融機関</h4>
     <div id="financial_accounts">
-    <table cellpadding="10px" data-placement="right" id="financial_accounts_table_home" title="指定された期間の合計金額です（計算対象項目のみ集計しています）。">
+    <table cellpadding="10px" data-placement="right" id="financial_accounts_table_home" title="登録金融期間">
         <thead>
             <tr>
-            <th>金融機関名</th>
-            <th>残高，利用額</th>
-            <th>更新日時</th>
+            {% for column in df_accounts.columns %}
+                <th>{{ column }}</th>
+            {% endfor %}
             </tr>
-            </thead>
+        </thead>
         <tbody>
-        <tr class="js-financial-accounts">
-        <th class="financial-accounts-head">JCBカード</th>
-        <td>-90,080円</td>
-        <td class="datetime">04/09 06:32</td>
-        </tr>
-        <tr class="js-financial-accounts">
-        <th class="financial-accounts-head">au PAY</th>
-        <td>0円</td>
-        <td class="datetime">04/08 22:22</td>
-        </tr>
+        {% for index, row in df_accounts.iterrows() %}
+            <tr class="financial-accounts">
+            <th class="account">{{ row[0] }}</th>
+            <td class="amount">{{ row[1] }}</td>
+            <td class="datetime">{{ row[2] }}</td>
+            </tr>
+        {% endfor %}
         </tbody>
         </table>
     </div>
     <br>
-
-
-
-
 </body>
 </html>
 

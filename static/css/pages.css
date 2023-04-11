@@ -14,14 +14,14 @@ thead {
     text-align: center
 }
 
-#total_assets_table_home {
+#total_asset_table_home {
     width: 20%;
     border: 1px #DDD solid;
     margin: 20px auto;
     font-size: 15px
 }
 
-#total_assets_table_home .total_assets-head {
+#total_asset_table_home th {
     background-color: #FAF6F0;
     border: 1px solid #DDD;
     padding: 10px;
@@ -29,23 +29,22 @@ thead {
     width: 40%
 }
 
-#total_assets_table_home td {
+#total_asset_table_home td {
     border-bottom: none;
     border: 1px solid #DDD;
     padding: 10px;
     text-align: right
 }
 
-
-/* ホーム/当月の収支 */
-#monthly_total_table_home {
+/* ホーム/収支合計 */
+#total_balances_table_home {
     width: 20%;
     border: 1px #DDD solid;
     margin: 20px auto;
     font-size: 15px
 }
 
-#monthly_total_table_home .monthly-total-head {
+#total_balances_table_home th {
     background-color: #FAF6F0;
     border: 1px solid #DDD;
     padding: 10px;
@@ -53,13 +52,12 @@ thead {
     width: 40%
 }
 
-#monthly_total_table_home td {
+#total_balances_table_home td {
     border-bottom: none;
     border: 1px solid #DDD;
     padding: 10px;
     text-align: right
 }
-
 
 /* ホーム/最新の入出金 */
 #recent_transactions_table_home {
@@ -69,7 +67,7 @@ thead {
     font-size: 15px
 }
 
-#recent_transactions_table_home .recent-transactions-head {
+#recent_transactions_table_home .date {
     border: 1px solid #DDD;
     padding: 10px;
     text-align: center;
@@ -90,8 +88,7 @@ thead {
     text-align: right
 }
 
-
-/* ホーム/登録金融機関 */
+/* 登録金融機関 */
 #financial_accounts_table_home {
     width: 50%;
     border: 1px #DDD solid;
@@ -99,7 +96,8 @@ thead {
     font-size: 15px
 }
 
-#financial_accounts_table_home .financial-accounts-head {
+#financial_accounts_table_home .account {
+    background-color: #FAF6F0;
     border: 1px solid #DDD;
     padding: 10px;
     text-align: center;
@@ -114,6 +112,60 @@ thead {
 }
 
 #financial_accounts_table_home .datetime {
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 30%
+}
+
+/* 家計簿/当月の収支 */
+#monthly_total_table_home {
+    width: 70%;
+    border: 1px #DDD solid;
+    margin: 20px auto;
+    font-size: 15px
+}
+
+#monthly_total_table_home th {
+    background-color: #FAF6F0;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 100%
+}
+
+#monthly_total_table_home td {
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: right
+}
+
+/* 予算 */
+#budgets_table_home {
+    width: 50%;
+    border: 1px #DDD solid;
+    margin: 20px auto;
+    font-size: 15px
+}
+
+#budgets_table_home .category {
+    background-color: #FAF6F0;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: center;
+    width: 40%
+}
+
+#budgets_table_home .expense {
+    border-bottom: none;
+    border: 1px solid #DDD;
+    padding: 10px;
+    text-align: right
+}
+
+#budgets_table_home .budget {
     border-bottom: none;
     border: 1px solid #DDD;
     padding: 10px;

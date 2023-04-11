@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 import config
 
 
-class MEDriver:
+class MeDriver:
     def __init__(self, mail_address, password):
         # UserAgent設定
         options = webdriver.ChromeOptions()
@@ -63,7 +63,7 @@ class MEDriver:
         return self.web.find_element_by_xpath('//*[@id="user-info"]/section/div[1]').text
 
     # ホーム/最新の入出金
-    def fetch_current_transactions(self):
+    def fetch_recent_transactions(self):
         self._to_page(self.end_point)
 
         table = self.web.find_elements_by_class_name("recent-transactions-row")
@@ -168,8 +168,8 @@ if __name__ == '__main__':
         print(total)
         print("\n")
 
-        print("fetch_current_transactions")
-        df = me.fetch_current_transactions()
+        print("fetch_recent_transactions")
+        df = me.fetch_recent_transactions()
         print(df)
         print("\n")
 

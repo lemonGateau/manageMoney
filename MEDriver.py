@@ -9,7 +9,7 @@ from selenium.webdriver.common.keys import Keys
 import config
 
 
-class MEDriver:
+class MeDriver:
     def __init__(self, mail_address, password):
         # UserAgent設定
         options = webdriver.ChromeOptions()
@@ -62,25 +62,39 @@ class MEDriver:
 
         return self.web.find_element_by_xpath('//*[@id="user-info"]/section/div[1]').text
 
-    # ホーム/最新の入出金
-    def fetch_current_transactions(self):
+    # ホーム/収支
+    def fetch_total_balances(self):
         self._to_page(self.end_point)
 
-        df = pd.DataFrame(columns=["分類", "店舗", "金額"])
+        period = self.web.find_element_by_xpath('//*[@id="cf-info"]/div/h2[1]').text
 
+        data = list()
+        table = self.web.find_elements_by_class_name("js-monthly_total")
+        for row in table:
+            data.append(row.text.split())
+
+        columns = ["内容", "合計金額"]
+        df = pd.DataFrame(data, columns=columns)
+
+        return df, period
+
+    # ホーム/最新の入出金
+    def fetch_recent_transactions(self):
+        self._to_page(self.end_point)
+
+        data = list()
         table = self.web.find_elements_by_class_name("recent-transactions-row")
         for row in table:
-            name, *data = row.text.split("\n")
-            df.loc[name] = data
+            data.append(row.text.split())
 
-        return df
+        columns=["利用日", "分類", "店舗", "金額"]
+
+        return pd.DataFrame(data, columns=columns)
 
     # ホーム/明細
     def fetch_account_statuses(self):
         """ todo: カード、銀行などで場合分け """
         self._to_page(self.end_point)
-
-        df = pd.DataFrame(columns=["金額", "更新日時"])
 
         try:
             accounts = self.web.find_elements_by_class_name("heading-accounts")
@@ -88,15 +102,18 @@ class MEDriver:
         except:
             return None
 
+        data = list()
         for account, amount in zip(accounts, amounts):
             name, update = account.text.split("\n")
             amount, *_   = amount.text.split("\n")
 
             update = update.replace("取得日時", "")[1:-1]
 
-            df.loc[name] = [amount, update]
+            data.append([name, amount, update])
 
-        return df
+        columns = ["内容", "金額", "更新日時"]
+
+        return pd.DataFrame(data, columns=columns)
 
     # 家計簿/月次推移/収支リスト
     def fetch_monthly_balances(self):
@@ -104,19 +121,18 @@ class MEDriver:
 
         periods = self.web.find_element_by_xpath('//*[@id="monthly_list"]/tbody/tr[1]')
         periods = periods.text.split()
+        periods.insert(0, "分類")
 
-        df = pd.DataFrame(columns=periods)
-
+        data = list()
         for i in range(30):
             try:
                 balance = self.web.find_element_by_xpath(f'//*[@id="monthly_list"]/tbody/tr[{i+2}]')
             except:
                 break
+            data.append(balance.text.split())
 
-            name, *amounts = balance.text.split()
-            df.loc[name] = amounts
 
-        return df
+        return pd.DataFrame(data, columns=periods)
 
     # 予算/今月の予算
     def fetch_monthly_budgets(self, offset_month=0):
@@ -125,19 +141,18 @@ class MEDriver:
 
         period = self.web.find_element_by_xpath('//*[@id="budgets-progress"]/div/section/div/div/div').text
 
-        df = pd.DataFrame(columns=["支出", "予算"])
-
+        data = list()
         for i in range(30):
             try:
                 row = self.web.find_element_by_xpath(f'//*[@id="budgets-progress"]/div/section/table/tbody/tr[{i+1}]')
             except:
                 break
+            data.append(row.text.split("\n"))
 
-            name, expense, budget = row.text.split("\n")
+        columns=["分類", "支出", "予算"]
+        df = pd.DataFrame(data, columns=columns)
 
-            df.loc[name] = [expense, budget]
-
-        return period, df
+        return df, period
 
     def _is_logged_in(self):
         return self.web.title == "マネーフォワード ME"
@@ -154,12 +169,13 @@ class MEDriver:
         pass
 
 
+
 if __name__ == '__main__':
     mes = list()
-    mes.append(MEDriver(config.mail1, config.pw1))
-    # mes.append(MEDriver(config.mail2, config.pw2))
-    # mes.append(MEDriver(config.mail3, config.pw3))
-    # mes.append(MEDriver(config.mail4, config.pw4))
+    mes.append(MeDriver(config.mail1, config.pw1))
+    # mes.append(MeDriver(config.mail2, config.pw2))
+    # mes.append(MeDriver(config.mail3, config.pw3))
+    # mes.append(MeDriver(config.mail4, config.pw4))
 
     time.sleep(1)
     for me in mes:
@@ -170,9 +186,15 @@ if __name__ == '__main__':
         print(total)
         print("\n")
 
-        print("fetch_current_transactions")
-        df = me.fetch_current_transactions()
+        print("fetch_total_balances")
+        df, period = me.fetch_total_balances()
+        print(period)
         print(df)
+        print("\n")
+
+        print("fetch_recent_transactions")
+        df1 = me.fetch_recent_transactions()
+        print(df1)
         print("\n")
 
         print("fetch_account_statuses")
@@ -186,13 +208,21 @@ if __name__ == '__main__':
         print("\n")
 
         print("fetch_monthly_budget")
-        period, df4 = me.fetch_monthly_budgets()
+        df4, period = me.fetch_monthly_budgets()
         print(period)
         print(df4)
         print("\n")
 
         print("fetch_monthly_budget(offset_month=2)")
-        period, df5 = me.fetch_monthly_budgets(offset_month=2)
+        df5, period = me.fetch_monthly_budgets(offset_month=2)
         print(period)
         print(df5)
         print("\n\n")
+
+
+    """
+    # indexに登録パターン
+    for row in table:
+        name, *data = row.text.split()
+        df.loc[name] = data
+    """

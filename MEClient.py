@@ -5,100 +5,99 @@ sys.path.append('../notifybot')
 import time
 import pandas as pd
 import matplotlib.pyplot as plt
-from MEDriver import MEDriver
+from MeDriver import MeDriver
 from line_notify_bot import LineNotifyBot
 from df_func import df_to_png
 import config
 
 
-class MEClient:
+class MeClient:
     def __init__(self, mail_address, password):
-        self.driver = MEDriver(mail_address, password)
+        self.driver = MeDriver(mail_address, password)
         self.lineNotifyBot = LineNotifyBot(config.ACCESS_TOKEN)
 
         self.png_path = "C:\\Users\\manab\\github_\\manageMoney\\pngs\\df1.png"
 
-    def send_total_asset(self):
-        total_asset = self.driver.fetch_total_asset()
+    def extract_total_asset(self):
+        return self.driver.fetch_total_asset()
 
-        self.lineNotifyBot.send(message=f"収入 = {total_asset}")
+    def extract_total_balances(self):
+        return self.driver.fetch_total_balances()
 
-        return total_asset
+    def extract_recent_transactions(self):
+        df = self.driver.fetch_recent_transactions()
 
-    def send_current_transactions(self):
-        df = self.driver.fetch_current_transactions()
+        try:
+            return df[["利用日", "店舗", "金額"]]
+        except:
+            return None
 
-        if df.empty:
-            self.lineNotifyBot(message="直近の入出金はありません")
-            return
+    def extract_account_statuses(self):
+        return self.driver.fetch_account_statuses()
 
-        df = df[["店舗", "金額"]]
+    def extract_monthly_total_balances(self):
+        df = self.driver.fetch_total_balances()
 
-        df_to_png(df, plot_index=True, header=df.columns, png_path=self.png_path)
+        try:
+            df = df.set_index("分類")
+            df = df.transpose()
+        except:
+            return None
 
-        self.lineNotifyBot.send(message="最新の入出金", image=self.png_path)
+        return df[["収入合計", "支出合計", "収支合計"]]
 
-        return df
-
-    def send_account_statuses(self):
-        df = self.driver.fetch_account_statuses()
-
-        if df.empty:
-            return
-
-        df_to_png(df, plot_index=True, header=df.columns, png_path=self.png_path)
-
-        self.lineNotifyBot.send(message="金融明細", image=self.png_path)
-
-        return df
-
-    def send_monthly_total_balances(self):
+    def extract_monthly_balances(self, columns=[]):
         df = self.driver.fetch_monthly_balances()
 
-        if df.empty:
-            return
-
         df = df.transpose()
-        df = df[["収入合計", "支出合計", "収支合計"]]
 
-        df_to_png(df, plot_index=True, header=df.columns, png_path=self.png_path)
+        if not columns:
+            columns = list(df.columns)
 
-        self.lineNotifyBot.send(message="収支", image=self.png_path)
+        df = df[columns].transpose()
 
         return df
+        """
+        except:
+            return None
+        """
 
-    def send_monthly_balance(self):
-        pass
-
-    def send_monthly_budgets(self, offset_month=0):
+    def extract_monthly_budgets(self, offset_month=0):
         if not (type(offset_month) in (str, int)):
             return None
 
-        period, df = self.driver.fetch_monthly_budgets(offset_month)
-        if df.empty:
+        df, period = self.driver.fetch_monthly_budgets(offset_month)
+
+        return df, period
+
+    def send_df(self, df, header=None, message="df", plot_index=False):
+        if df is None or df.empty:
             return
 
-        period = period.replace("-", "~")
-        df_to_png(df, plot_index=True, header=df.columns, png_path=self.png_path)
+        if header is None:
+            df_to_png(df, plot_index=plot_index, png_path=self.png_path)
+        else:
+            df_to_png(df, plot_index=plot_index, header=header, png_path=self.png_path)
 
-        self.lineNotifyBot.send(message=period, image=self.png_path)
-
-        return df
+        self.lineNotifyBot.send(message=message, image=self.png_path)
 
 
 if __name__ == '__main__':
     mes = list()
 
-    mes.append(MEClient(config.mail1, config.pw1))
-    # mes.append(MEClient(config.mail2, config.pw2))
-    # mes.append(MEClient(config.mail3, config.pw3))
-    # mes.append(MEClient(config.mail4, config.pw4))
+    mes.append(MeClient(config.mail1, config.pw1))
+    # mes.append(MeClient(config.mail2, config.pw2))
+    # mes.append(MeClient(config.mail3, config.pw3))
+    # mes.append(MeClient(config.mail4, config.pw4))
 
     for me in mes:
-        _ = me.send_total_asset()
-        _ = me.send_current_transactions()
-        _ = me.send_account_statuses()
-        _ = me.send_monthly_total_balances()
-        _ = me.send_monthly_budgets()
-        _ = me.send_monthly_budgets(offset_month=3)
+        _ = me.extract_total_asset()
+        _ = me.extract_total_balances()
+        _ = me.extract_recent_transactions()
+        _ = me.extract_account_statuses()
+        _ = me.extract_monthly_total_balances()
+        _ = me.extract_monthly_balances()
+        print(_)
+        _ = me.extract_monthly_budgets()
+        _ = me.extract_monthly_budgets(offset_month=3)
         time.sleep(5)

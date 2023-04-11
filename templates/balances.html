@@ -11,28 +11,29 @@
   <h3>収支</h3>
   <br><br><br>
 
-    <!-- ホーム/当月の収支 -->
+    <!-- 家計簿/当月の収支 -->
     <h4>当月の収支</h4>
     <div id="monthly_total">
-    <table cellpadding="10px" data-placement="right" id="monthly_total_table_home" title="指定された期間の合計金額です（計算対象項目のみ集計しています）。">
+    <table cellpadding="10px" data-placement="right" id="monthly_total_table_home" title="当月の収支">
+        <thead>
+            <tr>
+            {% for column in df_balances.columns %}
+                <th>{{ column }}</th>
+            {% endfor %}
+            </tr>
+        </thead>
         <tbody>
-        <tr class="js-monthly_total">
-        <th class="monthly-total-head">当月収入</th>
-        <td>0円</td>
-        </tr>
-        <tr class="js-monthly_total">
-        <th class="monthly-total-head">当月支出</th>
-        <td>0円</td>
-        </tr>
-        <tr class="js-monthly_total">
-        <th class="monthly-total-head">当月収支</th>
-        <td class="minus-color">0円</td>
-        </tr>
+        {% for _, row in df_balances.iterrows() %}
+            <tr class="monthly_total">
+            <th>{{ row[0] }}</th>
+            {% for amount in row[1:] %}
+                <td>{{ amount }}</td>
+            {% endfor %}
+            </tr>
+        {% endfor %}
         </tbody>
         </table>
     </div>
     <br>
-
-
 </body>
 </html>
