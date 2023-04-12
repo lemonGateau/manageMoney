@@ -30,7 +30,7 @@ class MeDriver:
         self.web.get(url)
         mail_form = self.web.find_element_by_xpath("/html/body/main/div/div/div/div[1]/div[1]/section/form/div[2]/div/input")
         mail_form.send_keys(mail_address)
-        time.sleep(1)
+        time.sleep(0.1)
 
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div[1]/div[1]/section/form/div[2]/div/div[3]/input")
         submit.click()
@@ -38,18 +38,18 @@ class MeDriver:
 
         pw_form = self.web.find_element_by_xpath("/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/input[2]")
         pw_form.send_keys(password)
-        time.sleep(1)
+        time.sleep(0.1)
 
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div[3]/input")
         submit.click()
-        time.sleep(2)
+        time.sleep(1)
 
         if self._is_logged_in():
             return True
 
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div[1]/div/ul/li/a/img")
         submit.click()
-        time.sleep(2)
+        time.sleep(1)
 
         submit = self.web.find_element_by_xpath("/html/body/main/div/div/div/div/div[1]/section/form/div[2]/div/div[2]/input")
         submit.click()

@@ -4,6 +4,24 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 
+def df_str_to_int(df):
+    for column in df.columns:
+        print(column)
+        df[column] = df[column].str.replace('円', '')
+        df[column] = df[column].str.replace(',', '').astype(int)
+
+    return df
+
+def df_int_to_str(df):
+    for column in df.columns:
+        for i in range(len(df[column])):
+            try:
+                df[column][i] = '{:,.0f}'.format(df[column][i]) + '円'
+            except:
+                pass
+
+    return df
+
 def df_to_png(df, plot_index=True, header=None, header_color="lightgray", png_path="pngs\\df1.png"):
     plt.rcParams["figure.subplot.left"] = 0
     plt.rcParams["figure.subplot.bottom"] = 0

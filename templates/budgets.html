@@ -8,8 +8,21 @@
 </head>
 
 <body>
-    <h3>予算</h3>
-    <br><br><br>
+    <!-- ヘッダタブ -->
+    <div class="area">
+        <input type="radio" name="tab_name" id="tab1" checked>
+        <label class="tab_class" for="tab2"><a href="/">＊ホーム＊</a></label>
+
+        <input type="radio" name="tab_name" id="tab2" >
+        <label class="tab_class" for="tab2"><a href="/financial_accounts">＊金融機関＊</a></label>
+
+        <input type="radio" name="tab_name" id="tab3" >
+        <label class="tab_class" for="tab2"><a href="/balances">＊収支＊</a></label>
+
+        <input type="radio" name="tab_name" id="tab4" >
+        <label class="tab_class" for="tab2"><a href="/budgets">＊予算＊</a></label>
+    </div>
+
 
     <!-- 予算 -->
     <h4>{{ period }}</h4>

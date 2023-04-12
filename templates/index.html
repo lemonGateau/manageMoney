@@ -8,8 +8,20 @@
 </head>
 
 <body>
-    <h3>ホーム</h3>
-    <br><br><br>
+    <!-- ヘッダタブ -->
+    <div class="area">
+        <input type="radio" name="tab_name" id="tab1" checked>
+        <label class="tab_class" for="tab2"><a href="/">＊ホーム＊</a></label>
+
+        <input type="radio" name="tab_name" id="tab2" >
+        <label class="tab_class" for="tab2"><a href="/financial_accounts">＊金融機関＊</a></label>
+
+        <input type="radio" name="tab_name" id="tab3" >
+        <label class="tab_class" for="tab2"><a href="/balances">＊収支＊</a></label>
+
+        <input type="radio" name="tab_name" id="tab4" >
+        <label class="tab_class" for="tab2"><a href="/budgets">＊予算＊</a></label>
+    </div>
 
     <!-- ホーム/総資産 -->
     <h4>総資産</h4>
@@ -28,16 +40,16 @@
     <!-- ホーム/収支合計 -->
     <h4>{{ balance_period }}</h4>
     <div id="total_balances">
-    {% for index, row in df_balances.iterrows() %}
     <table cellpadding="10px" data-placement="right" id="total_balances_table_home" title="収支合計">
         <tbody>
+        {% for index, row in df_balances.iterrows() %}
         <tr class="total_balances">
         <th>{{ row[0] }}</th>
         <td>{{ row[1] }}</td>
         </tr>
+        {% endfor %}
         </tbody>
         </table>
-    {% endfor %}
     </div>
     <br>
 
@@ -67,3 +79,6 @@
     <br>
 </body>
 </html>
+
+
+

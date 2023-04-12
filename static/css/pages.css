@@ -15,7 +15,7 @@ thead {
 }
 
 #total_asset_table_home {
-    width: 20%;
+    width: 40%;
     border: 1px #DDD solid;
     margin: 20px auto;
     font-size: 15px
@@ -38,7 +38,7 @@ thead {
 
 /* ホーム/収支合計 */
 #total_balances_table_home {
-    width: 20%;
+    width: 40%;
     border: 1px #DDD solid;
     margin: 20px auto;
     font-size: 15px
@@ -61,7 +61,7 @@ thead {
 
 /* ホーム/最新の入出金 */
 #recent_transactions_table_home {
-    width: 50%;
+    width: 60%;
     border: 1px #DDD solid;
     margin: 30px auto;
     font-size: 15px
@@ -90,7 +90,7 @@ thead {
 
 /* 登録金融機関 */
 #financial_accounts_table_home {
-    width: 50%;
+    width: 60%;
     border: 1px #DDD solid;
     margin: 30px auto;
     font-size: 15px
@@ -121,13 +121,13 @@ thead {
 
 /* 家計簿/当月の収支 */
 #monthly_total_table_home {
-    width: 70%;
+    width: 80%;
     border: 1px #DDD solid;
     margin: 20px auto;
     font-size: 15px
 }
 
-#monthly_total_table_home th {
+#monthly_total_table_home .category {
     background-color: #FAF6F0;
     border: 1px solid #DDD;
     padding: 10px;
@@ -144,7 +144,7 @@ thead {
 
 /* 予算 */
 #budgets_table_home {
-    width: 50%;
+    width: 60%;
     border: 1px #DDD solid;
     margin: 20px auto;
     font-size: 15px
@@ -169,6 +169,45 @@ thead {
     border-bottom: none;
     border: 1px solid #DDD;
     padding: 10px;
-    text-align: center;
+    text-align: right;
     width: 30%
 }
+
+
+
+.area {
+    width: 60%;
+    margin: 20px auto;
+    flex-wrap: wrap;
+    display: flex;
+  }
+   
+  .tab_class {
+    width: calc(100%/4);
+    background-color: #FAF6F0;
+    line-height: 40px;
+    font-size: 18px;
+    text-align: center;
+    display: block;
+    float: left;
+    order: -1;
+  }
+   
+  input[name="tab_name"] {
+    display: none;
+  }
+   
+  input:checked + .tab_class {
+    background-color: cadetblue;
+    color: aliceblue;
+  }
+   
+  .content_class {
+    display: none;
+    width: 100%;
+  }
+   
+  input:checked + .tab_class + .content_class {
+    display: block;
+  }
+
